@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily Schedule</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="rgba(255,255,255,0.1)"><circle cx="10" cy="10" r="2"/></svg>') repeat;
+            animation: float 20s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            margin: 20px;
+            border-radius: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+            display: block;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .date-navigation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .date-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .date-nav-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .date-nav-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .current-date {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 200px;
+            text-align: center;
+        }
+
+        .day-selector {
+            display: flex;
+            justify-content: center;
+            margin: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .day-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: #f0f0f0;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .day-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .day-btn.has-progress::after {
+            content: '';
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 12px;
+            height: 12px;
+            background: #4ecdc4;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .schedule-container {
+            padding: 20px;
+            margin: 0 20px 20px;
+        }
+
+        .time-slot {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .time-slot::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .time-slot:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .time-slot:hover::before {
+            transform: scaleY(1);
+        }
+
+        .time-slot.completed {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            color: white;
+        }
+
+        .time-slot.completed::before {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scaleY(1);
+        }
+
+        .time {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #667eea;
+            min-width: 140px;
+            margin-right: 20px;
+        }
+
+        .time-slot.completed .time {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .activity {
+            flex: 1;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .time-slot.completed .activity-icon {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-bar {
+            width: 100px;
+            height: 8px;
+            background: rgba(102, 126, 234, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-left: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+
+        .time-slot.completed .progress-fill {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .check-btn {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+            position: relative;
+        }
+
+        .check-btn:hover {
+            background: #667eea;
+            transform: scale(1.1);
+        }
+
+        .check-btn.checked {
+            background: #4ecdc4;
+            border-color: #4ecdc4;
+        }
+
+        .check-btn.checked::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .floating-add {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .floating-add:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .motivational-quote {
+            text-align: center;
+            padding: 20px;
+            margin: 20px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-radius: 15px;
+            font-style: italic;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .stats {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .time-slot {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .time {
+                min-width: auto;
+                margin-right: 0;
+            }
+            
+            .progress-bar {
+                margin-left: 0;
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>My Daily schedule</h1>
+            <p>Consistency is the key to success</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-number" id="completedTasks">0</span>
+                <div class="stat-label">Tasks Completed</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="currentStreak">7</span>
+                <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="totalHours">16</span>
+                <div class="stat-label">Active Hours</div>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" id="progressPercent">0%</span>
+                <div class="stat-label">Daily Progress</div>
+            </div>
+        </div>
+
+        <div class="date-navigation">
+            <div class="date-picker-container">
+                <button class="date-nav-btn" onclick="changeDate(-1)" title="Previous Day">‹</button>
+                <div class="current-date" id="currentDate">Loading...</div>
+                <button class="date-nav-btn" onclick="changeDate(1)" title="Next Day">›</button>
+            </div>
+        </div>
+
+        <div class="day-selector">
+            <button class="day-btn" onclick="selectDay(0)">Sunday</button>
+            <button class="day-btn active" onclick="selectDay(1)">Monday</button>
+            <button class="day-btn" onclick="selectDay(2)">Tuesday</button>
+            <button class="day-btn" onclick="selectDay(3)">Wednesday</button>
+            <button class="day-btn" onclick="selectDay(4)">Thursday</button>
+            <button class="day-btn" onclick="selectDay(5)">Friday</button>
+            <button class="day-btn" onclick="selectDay(6)">Saturday</button>
+        </div>
+
+        <div class="motivational-quote" id="motivationalQuote">
+            "Success is the sum of small efforts repeated day in and day out." - Robert Collier
+        </div>
+
+        <div class="schedule-container" id="scheduleContainer">
+            <!-- Schedule will be populated by JavaScript -->
+        </div>
+
+        <button class="floating-add" onclick="showAddTaskModal()" title="Add Custom Task">+</button>
+    </div>
+
+    <script>
+        const scheduleData = [
+            { time: "5:00 - 6:00 AM", activity: "Python Programming", icon: "🐍", category: "coding" },
+            { time: "6:00 - 7:00 AM", activity: "Morning Routine", icon: "🌅", category: "routine" },
+            { time: "7:00 - 7:30 AM", activity: "Travel to Gym", icon: "🚗", category: "travel" },
+            { time: "7:30 - 10:00 AM", activity: "Gym Workout", icon: "💪", category: "fitness" },
+            { time: "10:00 - 10:30 AM", activity: "Return from Gym", icon: "🏠", category: "travel" },
+            { time: "10:30 - 11:00 AM", activity: "Post-Workout Meal", icon: "🥗", category: "nutrition" },
+            { time: "11:00 - 11:30 AM", activity: "Shower & Puja", icon: "🧘", category: "spiritual" },
+            { time: "11:30 AM - 2:00 PM", activity: "AI/ML Study", icon: "🤖", category: "learning" },
+            { time: "2:00 - 2:30 PM", activity: "Lunch Break", icon: "🍽️", category: "nutrition" },
+            { time: "2:30 - 4:00 PM", activity: "Afternoon Rest", icon: "😴", category: "rest" },
+            { time: "4:00 - 7:00 PM", activity: "Kubernetes Learning", icon: "☸️", category: "tech" },
+            { time: "7:00 - 9:00 PM", activity: "Relaxation Time", icon: "🎮", category: "leisure" },
+            { time: "9:00 - 10:00 PM", activity: "Dinner & Wind Down", icon: "🌙", category: "routine" },
+            { time: "10:00 PM - 5:00 AM", activity: "Sleep", icon: "💤", category: "sleep" }
+        ];
+
+        const motivationalQuotes = [
+            "Success is the sum of small efforts repeated day in and day out. - Robert Collier",
+            "The way to get started is to quit talking and begin doing. - Walt Disney",
+            "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
+            "Believe you can and you're halfway there. - Theodore Roosevelt",
+            "The future depends on what you do today. - Mahatma Gandhi",
+            "Excellence is not a skill, it's an attitude. - Ralph Marston"
+        ];
+
+        let completedTasks = new Map(); // Now stores data by date
+        let currentDate = new Date();
+        let selectedDayIndex = currentDate.getDay();
+        
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                           'July', 'August', 'September', 'October', 'November', 'December'];
+
+        function formatDate(date) {
+            const day = date.getDate();
+            const month = monthNames[date.getMonth()];
+            const year = date.getFullYear();
+            const dayName = dayNames[date.getDay()];
+            
+            const suffix = day === 1 || day === 21 || day === 31 ? 'st' :
+                          day === 2 || day === 22 ? 'nd' :
+                          day === 3 || day === 23 ? 'rd' : 'th';
+            
+            return `${dayName}, ${month} ${day}${suffix}, ${year}`;
+        }
+
+        function getDateKey(date) {
+            return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        }
+
+        function getCurrentDateKey() {
+            return getDateKey(currentDate);
+        }
+
+        function changeDate(direction) {
+            currentDate.setDate(currentDate.getDate() + direction);
+            selectedDayIndex = currentDate.getDay();
+            updateDateDisplay();
+            updateDayButtons();
+            renderSchedule();
+        }
+
+        function selectDay(dayIndex) {
+            // Calculate the difference and adjust current date
+            const currentDayIndex = currentDate.getDay();
+            const dayDifference = dayIndex - currentDayIndex;
+            currentDate.setDate(currentDate.getDate() + dayDifference);
+            selectedDayIndex = dayIndex;
+            
+            updateDateDisplay();
+            updateDayButtons();
+            renderSchedule();
+        }
+
+        function updateDateDisplay() {
+            document.getElementById('currentDate').textContent = formatDate(currentDate);
+        }
+
+        function updateDayButtons() {
+            document.querySelectorAll('.day-btn').forEach((btn, index) => {
+                btn.classList.remove('active', 'has-progress');
+                if (index === selectedDayIndex) {
+                    btn.classList.add('active');
+                }
+                
+                // Check if this day has any completed tasks
+                const tempDate = new Date(currentDate);
+                const dayDiff = index - selectedDayIndex;
+                tempDate.setDate(tempDate.getDate() + dayDiff);
+                const dateKey = getDateKey(tempDate);
+                
+                if (completedTasks.has(dateKey) && completedTasks.get(dateKey).size > 0) {
+                    btn.classList.add('has-progress');
+                }
+            });
+        }
+
+        function renderSchedule() {
+            const container = document.getElementById('scheduleContainer');
+            container.innerHTML = '';
+            
+            const dateKey = getCurrentDateKey();
+            const dayTasks = completedTasks.get(dateKey) || new Set();
+
+            scheduleData.forEach((slot, index) => {
+                const isCompleted = dayTasks.has(index);
+                
+                const slotElement = document.createElement('div');
+                slotElement.className = `time-slot ${isCompleted ? 'completed' : ''}`;
+                
+                slotElement.innerHTML = `
+                    <div class="time">${slot.time}</div>
+                    <div class="activity">
+                        <div class="activity-icon">${slot.icon}</div>
+                        <span>${slot.activity}</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <button class="check-btn ${isCompleted ? 'checked' : ''}" 
+                            onclick="toggleTask(${index})">
+                    </button>
+                `;
+
+                // Add click event for progress animation
+                slotElement.addEventListener('click', function(e) {
+                    if (!e.target.classList.contains('check-btn')) {
+                        const progressFill = this.querySelector('.progress-fill');
+                        if (!this.classList.contains('completed')) {
+                            progressFill.style.width = '100%';
+                            setTimeout(() => {
+                                progressFill.style.width = '0%';
+                            }, 1000);
+                        }
+                    }
+                });
+
+                container.appendChild(slotElement);
+            });
+
+            updateStats();
+        }
+
+        function toggleTask(taskIndex) {
+            const dateKey = getCurrentDateKey();
+            
+            if (!completedTasks.has(dateKey)) {
+                completedTasks.set(dateKey, new Set());
+            }
+            
+            const dayTasks = completedTasks.get(dateKey);
+            
+            if (dayTasks.has(taskIndex)) {
+                dayTasks.delete(taskIndex);
+            } else {
+                dayTasks.add(taskIndex);
+                // Add celebration effect
+                createCelebration();
+            }
+            
+            renderSchedule();
+            updateDayButtons();
+        }
+
+        function createCelebration() {
+            // Simple celebration effect
+            const colors = ['#667eea', '#764ba2', '#4ecdc4', '#44a08d'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.style.position = 'fixed';
+                    confetti.style.width = '10px';
+                    confetti.style.height = '10px';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.left = Math.random() * window.innerWidth + 'px';
+                    confetti.style.top = '-10px';
+                    confetti.style.borderRadius = '50%';
+                    confetti.style.pointerEvents = 'none';
+                    confetti.style.zIndex = '1000';
+                    confetti.style.transition = 'all 3s ease-out';
+                    
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.style.top = window.innerHeight + 'px';
+                        confetti.style.transform = 'rotate(720deg)';
+                        confetti.style.opacity = '0';
+                    }, 100);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3100);
+                }, i * 100);
+            }
+        }
+
+        function updateStats() {
+            const dateKey = getCurrentDateKey();
+            const dayTasks = completedTasks.get(dateKey) || new Set();
+            const totalTasks = scheduleData.length;
+            const completed = dayTasks.size;
+            const percentage = Math.round((completed / totalTasks) * 100);
+
+            document.getElementById('completedTasks').textContent = completed;
+            document.getElementById('progressPercent').textContent = percentage + '%';
+            
+            // Calculate streak
+            let streak = 0;
+            const today = new Date();
+            const checkDate = new Date(today);
+            
+            // Count consecutive days with completed tasks
+            while (true) {
+                const key = getDateKey(checkDate);
+                const tasks = completedTasks.get(key);
+                if (tasks && tasks.size > 0) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            
+            document.getElementById('currentStreak').textContent = streak;
+            
+            // Animate the numbers
+            animateNumber('completedTasks', completed);
+            animateNumber('progressPercent', percentage, '%');
+            animateNumber('currentStreak', streak);
+        }
+
+        function animateNumber(elementId, targetValue, suffix = '') {
+            const element = document.getElementById(elementId);
+            const startValue = 0;
+            const duration = 1000;
+            const startTime = performance.now();
+
+            function updateNumber(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(startValue + (targetValue - startValue) * progress);
+                
+                element.textContent = currentValue + suffix;
+                
+                if (progress < 1) {
+                    requestAnimationFrame(updateNumber);
+                }
+            }
+            
+            requestAnimationFrame(updateNumber);
+        }
+
+        function showAddTaskModal() {
+            const customTask = prompt("Add a custom task:");
+            if (customTask) {
+                alert("Feature coming soon! Your custom task: " + customTask);
+            }
+        }
+
+        // Initialize the schedule
+        updateDateDisplay();
+        updateDayButtons();
+        renderSchedule();
+
+        // Show random motivational quote on load
+        const randomQuote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
+        document.getElementById('motivationalQuote').textContent = randomQuote;
+
+        // Auto-update time highlight
+        setInterval(() => {
+            const now = new Date();
+            const currentHour = now.getHours();
+            const currentMinute = now.getMinutes();
+            
+            // Add subtle glow to current time slot
+            document.querySelectorAll('.time-slot').forEach((slot, index) => {
+                slot.classList.remove('current-time');
+                // Logic to determine current time slot would go here
+            });
+        }, 60000);
+    </script>
+</body>
+</html>
